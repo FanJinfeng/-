@@ -49,9 +49,36 @@
 
 多关系图：包含多种类型的节点（Vertex）和多种类型的边（Edge）,节点代表现实世界中的事物实体，边则代表实体之间的某种联系。
 
-模式（Schema）：限定了知识图谱的数据格式，包括实体对象（Thing）及其值的类型（DataType），实体对象是某个领域内有意义的概念。
+模式（Schema）：限定了知识图谱的数据格式，包括实体对象（Thing）及其值的类型（DataType），实体对象是某个领域内有意义的概念集合（举例如下）。
 ![Schema定义.PNG](https://i.loli.net/2020/12/06/zxMLupBIewb2jFR.png)
-> Schema定义
+
+### 1.2 为什么？
+
+人工智能->知识工程->知识表示->知识图谱，知识图谱是人工智能很重要的一个细分领域。
+
+### 1.3 怎么做？
+
+涉及的NLP技术：
+ 
+1. 实体命名识别（Name Entity Recognition）：从文本中提取出实体并进行打标。
+2. 关系抽取（Relation Extraction）：从文本中提取出实体之间的关系。
+3. 实体统一（Entity Resolution）：将文本中表述不同的实体进行合并。
+4. 指代消解（Coreference Resolution）：确定文本中的代词指向的实体。
+5. ...
+
+储存方式：
+
+1. RDF：学术界场景，形式上表示为SPO（Subject, Predicate, Object）三元组，推荐使用Jena。
+![image.jpg](https://pic2.zhimg.com/v2-e3478e02c36ead3875e598b0668830fd_r.jpg)
+-  RDF由节点和边组成，节点表示实体、属性，边表示实体之间以及实体和属性之间的关系。
+
+2. 图数据库：工业界场景，形式上表示为属性图，推荐使用Neo4j。
+- 属性图由节点和边组成，节点和边可以带有属性。
+
+
+
+
+
 
 
 
