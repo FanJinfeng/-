@@ -51,8 +51,7 @@
 
 模式（Schema）：限定了知识图谱的数据格式，包括实体对象（Thing）及其值的类型（DataType），实体对象是某个领域内有意义的概念。
 
-- Thing: CreativeWork, Place, Person
-- DataType: Text, Number, Date
+![Schema定义.PNG](https://i.loli.net/2020/12/06/zxMLupBIewb2jFR.png)
 
 
 
