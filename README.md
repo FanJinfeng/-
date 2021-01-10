@@ -58,22 +58,22 @@
 
 ### 1.3 怎么做？
 
-- 涉及的NLP技术：
+涉及的NLP技术：
  
-1. 实体命名识别（Name Entity Recognition）：从文本中提取出实体并进行打标。
-2. 关系抽取（Relation Extraction）：从文本中提取出实体之间的关系。
-3. 实体统一（Entity Resolution）：将文本中表述不同的实体进行合并。
-4. 指代消解（Coreference Resolution）：确定文本中的代词指向的实体。
-5. ...
+  1. 实体命名识别（Name Entity Recognition）：从文本中提取出实体并进行打标。
+  2. 关系抽取（Relation Extraction）：从文本中提取出实体之间的关系。
+  3. 实体统一（Entity Resolution）：将文本中表述不同的实体进行合并。
+  4. 指代消解（Coreference Resolution）：确定文本中的代词指向的实体。
+  5. ...
 
-- 储存方式：
+储存方式：
 
-1. RDF：学术界场景，形式上表示为SPO（Subject, Predicate, Object）三元组，推荐使用Jena。
+  1. RDF：学术界场景，形式上表示为SPO（Subject, Predicate, Object）三元组，推荐使用Jena。
 ![image.jpg](https://pic2.zhimg.com/v2-e3478e02c36ead3875e598b0668830fd_r.jpg)
-  -  RDF由节点和边组成，节点表示实体、属性，边表示实体之间以及实体和属性之间的关系。
+    RDF由节点和边组成，节点表示实体、属性，边表示实体之间以及实体和属性之间的关系。
 
-2. 图数据库：工业界场景，形式上表示为属性图，推荐使用Neo4j。
-  - 属性图由节点和边组成，节点和边可以带有属性。
+  2. 图数据库：工业界场景，形式上表示为属性图，推荐使用Neo4j。
+    属性图由节点和边组成，节点和边可以带有属性。
 
 
 
