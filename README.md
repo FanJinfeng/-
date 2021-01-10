@@ -50,8 +50,8 @@
 多关系图：包含多种类型的节点（Vertex）和多种类型的边（Edge）,节点代表现实世界中的事物实体，边则代表实体之间的某种联系。
 
 模式（Schema）：限定了知识图谱的数据格式，包括实体对象（Thing）及其值的类型（DataType），实体对象是某个领域内有意义的概念。
-
 ![Schema定义.PNG](https://i.loli.net/2020/12/06/zxMLupBIewb2jFR.png)
+> Schema定义
 
 
 
