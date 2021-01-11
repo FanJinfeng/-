@@ -109,7 +109,7 @@ RETURN表示返回操作。
   CREATE (n:Location {city:'Boston', state:'MA'});
   CREATE (n:Location {city:'Lynn', state:'MA'});
   CREATE (n:Location {city:'Portland', state:'ME'});
-  CREATE (n:Location {city:'San Francisco', state:'CA'});
+  CREATE (n:LoNorn_incation {city:'San Francisco', state:'CA'});
 ```
 
 节点Location有city和state属性。
@@ -232,16 +232,16 @@ Python版本的Neo4J的驱动程序，在Python中使用Cypher来操作图数据
   # step 1：导入 Neo4j 驱动包
   from neo4j import GraphDatabase
   # step 2：连接 Neo4j 图数据库
-  driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))  # 连接失败
+  driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "******"))  # 在colab上执行是连接不到本地数据库的！！！
   # 添加关系函数
   def add_friend(tx, name, friend_name):
       tx.run("MERGE (a:Person {name: $name}) "
             "MERGE (a)-[:KNOWS]->(friend:Person {name: $friend_name})",
-            name=name, friend_name=friend_name)
-  # 定义关系函数
+            name=name, friend_name=friend_name)  # 节点标识符a, friend; name属性值name, friend_name
+  # 查询关系函数
   def print_friends(tx, name):
       for record in tx.run("MATCH (a:Person)-[:KNOWS]->(friend) WHERE a.name = $name "
-                          "RETURN friend.name ORDER BY friend.name", name=name):
+                          "RETURN friend.name ORDER BY friend.name", name=name):  # 查询name属性值为name的人的朋友
           print(record["friend.name"])
   # step 3：运行
   with driver.session() as session:
@@ -251,16 +251,16 @@ Python版本的Neo4J的驱动程序，在Python中使用Cypher来操作图数据
       session.read_transaction(print_friends, "Arthur")
 ```
 
-上述程序的核心部分，抽象一下就是：
+上述程序的核心部分的结构如下：
 
 ```s
   neo4j.GraphDatabase.driver(xxxx).session().write_transaction(函数(含tx.run(CQL语句)))
 ```
-或者
 
 ```s
   neo4j.GraphDatabase.driver(xxxx).session().begin_transaction.run(CQL语句)
 ```
+
 ### 3.2 py2neo
 
 Python版本的Neo4J的驱动程序，其可以直接使用类似Python语法操作图数据库。
@@ -270,25 +270,29 @@ Python版本的Neo4J的驱动程序，其可以直接使用类似Python语法操
   # step 1：导包
   from py2neo import Graph, Node, Relationship
   # step 2：构建图
-  g = Graph()
+  g = Graph("bolt://localhost:7687", auth=("neo4j", "******"))
   # step 3：创建节点
   tx = g.begin()
   a = Node("Person", name="Alice")
   tx.create(a)
   b = Node("Person", name="Bob")
+  tx.create(b)
   # step 4：创建边
   ab = Relationship(a, "KNOWS", b)
   # step 5：运行
   tx.create(ab)
   tx.commit()
+  
+  # 查看信息
+  print(a, ab)
 ```
 
 ## 四、通过csv文件批量导入图数据
 
-csv分为两个nodes.csv和relations.csv，注意关系里的起始节点必须是在nodes.csv里能找到的：
+nodes.csv和relations.csv文件包含的字段如下（注意关系里的起始节点必须是在nodes.csv里能找到的）：
 
 ```s
-  # nodes.csv需要指定唯一ID和nam,
+  # nodes.csv（需要指定唯一ID和name）
   headers = [
   'unique_id:ID', # 图数据库中节点存储的唯一标识
   'name', # 节点展示的名称
@@ -311,24 +315,23 @@ csv分为两个nodes.csv和relations.csv，注意关系里的起始节点必须�
   'property' # 关系的其他属性
   ]
 ```
-制作出两个csv后，通过以下步骤导入neo4j:
 
-1. 两个文件nodes.csv ，relas.csv放在
+1. 两个文件放在Neo4J的bin\importdata目录下
 
-```s
-  neo4j安装绝对路径/import
-```
 2. 导入到图数据库mygraph.db
 
 ```s
-  neo4j bin/neo4j-admin import --nodes=/var/lib/neo4j/import/nodes.csv --relationships=/var/lib/neo4j/import/relas.csv   --delimiter=^ --database=xinfang*.db
+  # 在命令行将目录切换至bin目录下
+  neo4j-admin import --nodes=importdata/nodes.csv --relationships=importdata/relations.csv   --delimiter=^ --database=mygraph.db
 ```
-delimiter=^ 指的是csv的分隔符
+
+delimiter=^指的是csv的分隔符（不要换成.啊！！！）
 
 3. 指定neo4j使用哪个数据库
 
 ```s
-  修改 /root/neo4j/conf/neo4j.conf 文件中的 dbms.default_database=mygraph.db
+  # 修改Neo4J的conf文件
+  dbms.active_database=mygraph.db
 ```
 
 4. 重启neo4j就可以看到数据已经导入成功了
