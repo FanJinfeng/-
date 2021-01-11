@@ -146,7 +146,7 @@ MATCH表示匹配操作，MERGE表示匹配已存在的节点（如果节点不�
   ```s
   CREATE (a:Person {name:'Todd'})-[r:FRIENDS]->(b:Person {name:'Carlos'});
   ```
-![image.png]()
+![image.png](https://github.com/FanJinfeng/KnowledgeGraph/blob/main/graph1.png)
 
 > 节点和关系可视化展示
 
