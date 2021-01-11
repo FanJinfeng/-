@@ -9,17 +9,13 @@
   - [1.1 是什么？](#11-是什么？)
   - [1.2 为什么？](#12-为什么？)
   - [1.3 怎么做？](#13-怎么做？)
-- [二、Neo4J 实战](#五neo4j-实战)
-  - [5.1 引言](#51-引言)
-  - [5.2 创建节点](#52-创建节点)
-  - [5.3 创建关系](#53-创建关系)
-  - [5.4 创建 出生地关系](#54-创建-出生地关系)
-  - [5.5 图数据库查询](#55-图数据库查询)
-  - [5.6 删除和修改](#56-删除和修改)
-- [六、通过 Python 操作 Neo4j](#六通过-python-操作-neo4j)
-  - [6.1 neo4j模块：执行CQL ( cypher ) 语句](#61-neo4j模块执行cql--cypher--语句)
-  - [6.2 py2neo模块：通过操作python变量，达到操作neo4j的目的](#62-py2neo模块通过操作python变量达到操作neo4j的目的)
-- [七、通过csv文件批量导入图数据](#七通过csv文件批量导入图数据)
+- [二、Neo4J 实战](#二Neo4J-实战)
+  - [2.1 是什么？](#21-是什么？)
+  - [2.2 Neo4J实战](#22-Neo4J实战)
+- [三、通过Python操作Neo4J](#三通过Python操作Neo4J)
+  - [3.1 neo4j](#31-neo4j)
+  - [3.2 py2neo](#32-py2neo)
+- [四、通过csv文件批量导入图数据](#四通过csv文件批量导入图数据)
 - [参考资料](#参考资料)
 
 
@@ -155,7 +151,7 @@ MATCH表示匹配操作，MERGE表示匹配已存在的节点（如果节点不�
 1. 查询所有在Boston出生的人物
 
 ```s
-  MATCH (a:Person)-[:BORN_IN]->(b:Location {city:'Boston'}) RETURN a,b
+  MATCH (a:Person)-[:BORN_IN]->(b:Location {city:'Boston'}) RETURN a,b;
 ```
 
 MATCH表示匹配操作，RETURN表示返回操作。
@@ -163,39 +159,39 @@ MATCH表示匹配操作，RETURN表示返回操作。
 2. 查询所有有关系的节点
 
 ```s
-  MATCH (a)--()  RETURN a
+  MATCH (a)--()  RETURN a;
 ```
 
-3. 查询所有对外有关系的节点，以及关系类型
+3. 查询所有对外有关系的节点属性值，以及对外关系关系类型
 
 ```s
-  MATCH (a)-[r]->() RETURN a.name，type(r)
+  MATCH (a)-[r]->() RETURN a.name, type(r);
 ```
 
-r为关系的标识符。
+r为关系的标识符，返回诸如"Sally" "FRIENDS"。
 
 
 4. 查询所有有结婚关系的节点
 
 ```s
-  MATCH (n)-[:MARRIED]-() RETURN n
+  MATCH (n)-[:MARRIED]-() RETURN n;
 ```
 
 5. 查找某人的朋友的朋友
 
 ```s
-  MATCH (a:Person {name:'Mike'})-[r1:FRIENDS]-()-[r2:FRIENDS]-(friend_of_a_friend) RETURN friend_of_a_friend.name AS fofName
+  MATCH (a:Person {name:'Mike'})-[r1:FRIENDS]-()-[r2:FRIENDS]-(friend_of_a_friend) RETURN friend_of_a_friend.name AS fofName;
 ```
 
-AS指定返回查询结果的名称。
+AS指定返回查询结果的名称，返回诸如"Sally"。
 
 7. 增加/修改节点的属性
 
 ```s
-  MATCH (a:Person {name:'Liz'}) SET a.age=34
-  MATCH (a:Person {name:'Shawn'}) SET a.age=32
-  MATCH (a:Person {name:'John'}) SET a.age=44
-  MATCH (a:Person {name:'Mike'}) SET a.age=25
+  MATCH (a:Person {name:'Liz'}) SET a.age=34;
+  MATCH (a:Person {name:'Shawn'}) SET a.age=32;
+  MATCH (a:Person {name:'John'}) SET a.age=44;
+  MATCH (a:Person {name:'Mike'}) SET a.age=25;
 ```
 
 SET表示修改操作，a.age表示节点的age属性。
@@ -203,8 +199,8 @@ SET表示修改操作，a.age表示节点的age属性。
 8. 删除节点的属性
 
 ```s
-  MATCH (a:Person {name:'Mike'}) SET a.test='test'
-  MATCH (a:Person {name:'Mike'}) REMOVE a.test
+  MATCH (a:Person {name:'Mike'}) SET a.test='test';
+  MATCH (a:Person {name:'Mike'}) REMOVE a.test;
 ```
 
 REMOVE表示删除属性操作，a.test表示节点的test属性。
@@ -212,7 +208,7 @@ REMOVE表示删除属性操作，a.test表示节点的test属性。
 9. 删除节点
 
 ```s
-  MATCH (a:Location {city:'Portland'}) DELETE a
+  MATCH (a:Location {city:'Portland'}) DELETE a;
 ```
 
 DELETE表示删除节点操作。
@@ -220,7 +216,7 @@ DELETE表示删除节点操作。
 10. 删除有关系的节点
 
 ```s
-  MATCH (a:Person {name:'Todd'})-[rel]-(b:Person) DELETE a,b,rel
+  MATCH (a:Person {name:'Todd'})-[rel]-(b:Person) DELETE a,b,rel;
 ```
 
 DELETE表示删除节点和关系的操作。
@@ -232,16 +228,17 @@ DELETE表示删除节点和关系的操作。
 Python版本的Neo4J的驱动程序，在Python中使用Cypher来操作图数据库。
 
 ```s
+  !pip3 install Neo4j
   # step 1：导入 Neo4j 驱动包
   from neo4j import GraphDatabase
   # step 2：连接 Neo4j 图数据库
-  driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
-  # 添加 关系 函数
+  driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))  # 连接失败
+  # 添加关系函数
   def add_friend(tx, name, friend_name):
       tx.run("MERGE (a:Person {name: $name}) "
             "MERGE (a)-[:KNOWS]->(friend:Person {name: $friend_name})",
             name=name, friend_name=friend_name)
-  # 定义 关系函数
+  # 定义关系函数
   def print_friends(tx, name):
       for record in tx.run("MATCH (a:Person)-[:KNOWS]->(friend) WHERE a.name = $name "
                           "RETURN friend.name ORDER BY friend.name", name=name):
@@ -269,6 +266,7 @@ Python版本的Neo4J的驱动程序，在Python中使用Cypher来操作图数据
 Python版本的Neo4J的驱动程序，其可以直接使用类似Python语法操作图数据库。
 
 ```s 
+  !pip3 install py2neo
   # step 1：导包
   from py2neo import Graph, Node, Relationship
   # step 2：构建图
@@ -284,12 +282,8 @@ Python版本的Neo4J的驱动程序，其可以直接使用类似Python语法操
   tx.create(ab)
   tx.commit()
 ```
-py2neo模块符合python的习惯，写着感觉顺畅，其实可以完全不会CQL也能写
 
 ## 四、通过csv文件批量导入图数据
-
-前面学习的是单个创建节点，不适合大批量导入。这里我们介绍使用neo4j-admin import命令导入，适合部署在docker环境下的neo4j。
-其他导入方法也可以参考[Neo4j之导入数据](https://zhuanlan.zhihu.com/p/93746655)
 
 csv分为两个nodes.csv和relations.csv，注意关系里的起始节点必须是在nodes.csv里能找到的：
 
@@ -342,3 +336,4 @@ delimiter=^ 指的是csv的分隔符
 ## 参考资料
 
 1. [Datawhale 知识图谱组队学习 之 Task 1 知识图谱介绍](https://github.com/datawhalechina/team-learning-nlp/blob/master/KnowledgeGraph_Basic/task01.md)
+2. [Neo4J Cypher neo4j-driver py2neo介绍与使用](https://blog.csdn.net/qq_32507417/article/details/112433333)
