@@ -68,6 +68,7 @@
 
 笔者在jupyter中运行的代码 
 https://github.com/FanJinfeng/KnowledgeGraph/blob/main/%E6%9E%84%E5%BB%BA%E5%8C%BB%E7%96%97%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1.ipynb
+
 加载失败的话可以通过下面的网址查看.ipynb文件: https://nbviewer.jupyter.org/
 
 ## 参考资料 
