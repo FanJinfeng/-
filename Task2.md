@@ -49,6 +49,13 @@
   - from sklearn.externals import joblib修改为import joblib
   - 将数据存放路径修改为自己的路径（词向量文件需要自己下载哦！地址为：https://github.com/Embedding/Chinese-Word-Vectors）
   - 使用joblib重新dump两个模型生成.joblib文件（来自队友@Xiesy的解决方案！！！）
+    - 另建一个虚拟环境，安装0.21.0版本的sklearn，使用旧版本的sklearn打开模型，再用joblib重新存一遍，就可以在新版本的sklearn环境下直接用joblib来load模型了（因为读取都用的joblib，模型后缀无所谓）。
+    ```s
+      from sklearn.externals import joblib as oldjoblib
+      import joblib
+      tfidf_model = oldjoblib.load(old_model_path)
+      joblib.dump(tfidf_model, 'tfidf_model.joblib')
+    ```
 
 2. Joblib简介
 
@@ -56,6 +63,12 @@
   joblib.dump(model, path)  # 将模型保存到本地
   jolib.load(path)  # 将模型从本地调回
 ```
+
+## 五、Mycode
+
+笔者在jupyter中运行的代码 
+https://github.com/FanJinfeng/KnowledgeGraph/blob/main/%E6%9E%84%E5%BB%BA%E5%8C%BB%E7%96%97%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1.ipynb
+加载失败的话可以通过下面的网址查看.ipynb文件: https://nbviewer.jupyter.org/
 
 ## 参考资料 
 
