@@ -17,6 +17,7 @@
   - [3.1 数据集简介](#31-数据集简介)
   - [3.2 主体类 MedicalGraph 介绍](#34-主体类-medicalgraph-介绍)
   - [3.3 主体类 MedicalGraph 中关键代码讲解](#35-主体类-medicalgraph-中关键代码讲解)
+ - [四、多线程导入](#四多线程导入)
 - [参考资料](#参考资料)
 
 ## 一、引言
@@ -378,6 +379,59 @@ class MedicalGraph:
         self.create_relationship("Disease", "Department", rel_department, "DEPARTMENT_IS", "所属科室")
         self.create_relationship("Disease", "Complication", rel_complication, "HAS_COMPLICATION", "并发症")
         self.create_relationship("Disease", "Drug", rel_drug, "HAS_DRUG", "药品")
+```
+
+## 四、多线程导入
+
+### 4.1 CPU的内存结构和多线程
+
+1. CPU和各级缓存(cache)、内存/主存(memory)、硬盘(disk)之间的关系
+
+[!image.jpg](https://pic1.zhimg.com/v2-f7df2460ef1d2af17bbf1b2a9d6bb550_r.jpg)
+
+- 为什么会出现多级缓存？
+    - CPU的频率太快了，直接读取内存中的数据又太慢了，我们不想让 CPU 停下来等待，所以加入了一层读取速度大于内存但小于 CPU 的东西，这就是缓存。
+    - CPU 需要数据就问缓存要，缓存没有就从主存中读取，并保留一份在缓存中。下次读取就从缓存中读取，加快速度。（数据的保存和读取都要在主存上进行）
+    - CPU 运行速度快（电），缓存次之（保存内部存储数据不需要刷新电路），而内存慢一点（保存内部存储数据需要刷新电路），硬盘最慢（磁头移动+电信号）。
+
+2. 多线程
+
+[!image.jpg](https://pic2.zhimg.com/v2-c8c982aa5384854a804ab3a5a57488f5_r.jpg)
+
+- 面临的问题
+    - 每个线程都有自己的缓存，假如线程 1 从主存中读取到 x，并对其加 1 ，此时还没有写回主存，线程 2 也从主存中读取 x ，并加 1 ，它们是不知道对方的，也不可以读取对方的缓存，这时都将 x 写回主存，那此时 x 的值就少了 1 。
+
+- 解决方法
+    - 指定协议，规定不同的线程在读写主存数据时遵守某种规则，以保证不会出现数据不一致的问题。
+    - 例如MESI协议，定义了 cache line 的四种状态，而线程对 cache line 的四种操作可能会产生不一致的状态，因此缓存控制器监听到本地操作和远程操作的时候，需要对地址一致的 cache line 状态进行一致性修改，从而保证数据在多个缓存之间保持一致性。(M: modified E: Exclusive S: shared I: invalid)。
+
+### 4.2 多进程导入数据
+
+```s
+    from multiprocessing import Process
+    def create_graphNodes(self):
+        disease, symptom, alias, part, department, complication, drug, rel_alias, rel_symptom, rel_part, \
+	rel_department, rel_complication, rel_drug, rel_infos = self.read_file()
+
+	p1 = Process(target=self.create_node,args=("Symptom", symptom))
+	p2 = Process(target=self.create_node,args=("Alias", alias))
+	p3 = Process(target=self.create_node,args=("Part", part))
+	p4 = Process(target=self.create_node,args=("Complication", complication))
+	p5 = Process(target=self.create_node,args=("Drug", drug))
+	p6 = Process(target=self.create_diseases_nodes,args=([rel_infos]))
+
+	p1.start()
+	p2.start()
+	p3.start()
+	p4.start()
+	p5.start()
+	p6.start()
+	p1.join()
+	p2.join()
+	p3.join()
+	p4.join()
+	p5.join()
+	p6.join()
 ```
 
 ## 参考资料 
