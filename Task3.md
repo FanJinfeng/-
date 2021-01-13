@@ -409,31 +409,32 @@ class MedicalGraph:
 
 ### 4.2 多进程导入数据
 
+函数中使用mutiprocessing.Precess必须放在if __name__ == "__main__":下执行，如需要在函数中使用，建议使用threading。
+
 ```s
-    from multiprocessing import Process
+    import threading
     def create_graphNodes(self):
         disease, symptom, alias, part, department, complication, drug, rel_alias, rel_symptom, rel_part, \
 	rel_department, rel_complication, rel_drug, rel_infos = self.read_file()
 
-	p1 = Process(target=self.create_node,args=("Symptom", symptom))
-	p2 = Process(target=self.create_node,args=("Alias", alias))
-	p3 = Process(target=self.create_node,args=("Part", part))
-	p4 = Process(target=self.create_node,args=("Complication", complication))
-	p5 = Process(target=self.create_node,args=("Drug", drug))
-	p6 = Process(target=self.create_diseases_nodes,args=([rel_infos]))
-
-	p1.start()
-	p2.start()
-	p3.start()
-	p4.start()
-	p5.start()
-	p6.start()
-	p1.join()
-	p2.join()
-	p3.join()
-	p4.join()
-	p5.join()
-	p6.join()
+        threads = []
+	t1 = threading.Thread(target=self.create_node,args=("Symptom", symptom))
+	threads.append(t1)
+	t2 = threading.Thread(target=self.create_node,args=("Alias", alias))
+	threads.append(t2)
+	t3 = threading.Thread(target=self.create_node,args=("Part", part))
+	threads.append(t3)
+	t4 = threading.Thread(target=self.create_node,args=("Complication", complication))
+	threads.append(t4)
+	t5 = threading.Thread(target=self.create_node,args=("Drug", drug))
+	threads.append(t5)
+	t6 = threading.Thread(target=self.create_diseases_nodes,args=([rel_infos]))
+	threads.append(t6)
+	
+	for t in threads:
+	    t.start()
+	for t in threads:
+	    t.join()
 ```
 
 ## 参考资料 
