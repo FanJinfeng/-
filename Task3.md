@@ -18,6 +18,8 @@
   - [3.2 主体类 MedicalGraph 介绍](#34-主体类-medicalgraph-介绍)
   - [3.3 主体类 MedicalGraph 中关键代码讲解](#35-主体类-medicalgraph-中关键代码讲解)
  - [四、多线程导入](#四多线程导入)
+  - [4.1 CPU的内存结构和多线程](#41-CPU的内存结构和多线程)
+  - [4.2 多进程导入数据](#42-多进程导入数据)
 - [参考资料](#参考资料)
 
 ## 一、引言
@@ -387,7 +389,7 @@ class MedicalGraph:
 
 1. CPU和各级缓存(cache)、内存/主存(memory)、硬盘(disk)之间的关系
 
-[!image.jpg](https://pic1.zhimg.com/v2-f7df2460ef1d2af17bbf1b2a9d6bb550_r.jpg)
+![image.jpg](https://pic1.zhimg.com/v2-f7df2460ef1d2af17bbf1b2a9d6bb550_r.jpg)
 
 - 为什么会出现多级缓存？
     - CPU的频率太快了，直接读取内存中的数据又太慢了，我们不想让 CPU 停下来等待，所以加入了一层读取速度大于内存但小于 CPU 的东西，这就是缓存。
@@ -396,7 +398,7 @@ class MedicalGraph:
 
 2. 多线程
 
-[!image.jpg](https://pic2.zhimg.com/v2-c8c982aa5384854a804ab3a5a57488f5_r.jpg)
+![image.jpg](https://pic2.zhimg.com/v2-c8c982aa5384854a804ab3a5a57488f5_r.jpg)
 
 - 面临的问题
     - 每个线程都有自己的缓存，假如线程 1 从主存中读取到 x，并对其加 1 ，此时还没有写回主存，线程 2 也从主存中读取 x ，并加 1 ，它们是不知道对方的，也不可以读取对方的缓存，这时都将 x 写回主存，那此时 x 的值就少了 1 。
