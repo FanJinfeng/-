@@ -46,7 +46,6 @@
   * 基于端到端（end-to-end）实现：结合深度学习技术，通过海量数据训练，挖掘出从用户自然语言输入到系统自然语言输出的整体映射关系。
 
 ![](https://upload-images.jianshu.io/upload_images/10798244-16aa357b7be5a646.png?imageMogr2/auto-orient/strip|imageView2/2/w/816/format/webp)
-> 基于流水线实现
 
 * 问答系统从答案来源划分：
   * 知识库问答：是目前的研究热点，给定自然语言问题，通过对问题进行语义理解和解析，进而利用知识库进行查询、推理得出答案。
@@ -55,7 +54,6 @@
   * 网际网路问答
 
 ![](https://upload-images.jianshu.io/upload_images/10798244-afb41aa23fee13c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-> 知识库问答
 
 ### 2.2 Query understanding
 
@@ -82,7 +80,6 @@
   - 深度学习模型（Fasttext、TextCNN、BiLSTM + Self-Attention、BERT等）
 
 ![](https://upload-images.jianshu.io/upload_images/10798244-467c5be884303091.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-> 意图识别
   
 #### 2.2.3 槽值填充
 
@@ -90,7 +87,6 @@
 - 举例：Query "北京飞成都的机票"，通过意图分类模型可以识别出 Query 的整体意图是订机票，在此基础上进一步语义解析出对应的出发地 Depart="北京"，到达地 Arrive="成都"，所以生成的形式化表达可以是 Ticket=Order(Depart,Arrive)，Depart={北京}，Arrive={成都}。
 
 ![](https://upload-images.jianshu.io/upload_images/10798244-25aa5d0560dfee1a.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-> 槽值填充
 
 - 序列标注任务常用模型：
   - 词典匹配
@@ -102,7 +98,6 @@
 ## 三、任务实践
 
 ![](https://upload-images.jianshu.io/upload_images/10798244-322785573485895d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-> 基于知识图谱的问答系统框架
 
 ### 四、 主体类 EntityExtractor 框架介绍
 
