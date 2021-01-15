@@ -13,7 +13,7 @@
     - [2.2.2 意图识别](#222-意图识别)
     - [2.2.3 槽值填充](#223-槽值填充)
 - [三、任务实践](#三任务实践)
-- [四、命名实体识别](#五命名实体识别)
+- [四、命名实体识别](#四命名实体识别)
   - [4.1 整体思路](#41-整体思路)
   - [4.2 代码注解](#42-代码注解)
     - [4.2.1 构建 AC Tree](#421-构建-AC-Tree)
@@ -22,8 +22,8 @@
 - [五、意图识别](#五意图识别)
   - [5.1 整体思路](#51-整体思路)
   - [5.2 代码注解](#52-代码注解)
-    - [6.2.1 特征构建](#621-特征构建)
-    - [6.2.2 使用朴素贝叶斯进行文本分类](#622-使用朴素贝叶斯进行文本分类)
+    - [5.2.1 特征构建](#521-特征构建)
+    - [5.2.2 使用朴素贝叶斯进行文本分类，并根据命名实体识别结果进行补充和纠正意图](#522-使用朴素贝叶斯进行文本分类使用朴素贝叶斯进行文本分类，并根据命名实体识别结果进行补充和纠正意图)
 - [参考资料](#参考资料)
 
 ## 一、引言
@@ -376,26 +376,28 @@ class EntityExtractor:
 	for i in range(len(s2) + 1):
 	    solution[0][i] = i
 	for i in range(len(s1) + 1):
-	    solution[i][0] = i  # 最左边和最上边记录了更换两个字符需要经过的步数
+	    solution[i][0] = i
 
 	for i in range(1, m + 1):
 	    for j in range(1, n + 1):
 		if s1[i - 1] == s2[j - 1]:
-		    solution[i][j] = solution[i - 1][j - 1]  # 取对角线上的值
+		    solution[i][j] = solution[i - 1][j - 1]
 		else:
 		    # 插入、删除、替换
 		    solution[i][j] = 1 + min(solution[i][j - 1], min(solution[i - 1][j],
-								     solution[i - 1][j - 1]))  # 取一个三角形上的最小值再加1
+								     solution[i - 1][j - 1]))
 	return solution[m][n]
 ```
 
 - 编辑距离
     - 定义：也叫莱文斯坦距离（Levenshtein），是针对两个字符串的差异程度的量化量测，量测的方式是看至少需要多少次的处理才能将一个字符串变成另一个字符串。
     - 例子：计算字符串a='love'，b='lolpe'的编辑距离，love->lolve(插入l)，lolve->lolpe(用v替换成p)，所以编辑距离为2。
-    - 公式定义：i和j分别是字符串a和字符串b的下标，下标从1开始。
-    ![image](https://www.zhihu.com/equation?tex=%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i%2C+j%29%3D%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%7B%5Cmax+%28i%2C+j%29%7D+%26+%7B%5Ctext+%7B+if+%7D+%5Cmin+%28i%2C+j%29%3D0%7D+%5C%5C+%7B%5Cmin+%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%7B%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i-1%2C+j%29%2B1%7D+%5C%5C+%7B%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i%2C+j-1%29%2B1%7D++%5C%5C%7B%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i-1%2C+j-1%29%2B1_%7B%5Cleft%28a_%7Bi%7D+%5Cneq+b_%7Bj%7D%5Cright%29%7D%7D+%5Cend%7Barray%7D%5Cright.%7D+%26+%7B%5Ctext+%7B+otherwise+%7D%7D%5Cend%7Barray%7D%5Cright.)
-    - 具体运算过程
-        - 1.建立一个矩阵，用来存储上一步计算好的距离；
+    - 公式定义：
+	- 初始X的长度为i，则Y的长度为0时，需要在Y中插入i个字符才能使Y变成X，所以D(i,0)=i；同理X的长度为0，Y的长度为j时，需要删去j个字符才能使Y变成X，所以D(0,j)=j。
+	 - 循环条件三个式子分别对应在i-1的基础上删除一个字符使之变成j、在j-1的基础上插入1个字符使之变成i和置换这三个操作，其中若X(i)=Y(j)，则无需置换，所以cost等于1，否则需要各在i-1和j-1上插入一个字符，cost等于2。
+    ![image.png](https://i.loli.net/2021/01/15/ZY67abAB4PiwHsC.png)
+    - 具体运算过程：
+	- 1.建立一个矩阵，用来存储上一步计算好的距离;
 	- 2.初始化第一行和第一列的所有距离，即公式中的第一行；
 	- 3.然后开始循环计算所有的距离，直到最后一个字符。
 	
@@ -405,10 +407,9 @@ class EntityExtractor:
 
 - step 1：利用TF-IDF表征文本特征，同时构建一些人工特征（每一类意图常见词在句子中出现的个数）；
 - step 2：训练朴素贝叶斯模型进行意图识别任务；
-- step 3：使用实体信息进行意图的纠正和补充。
+- step 3：根据命名实体识别结果进行意图的纠正和补充。
 
 ![](https://upload-images.jianshu.io/upload_images/10798244-6113c647b881e4aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-> 图 7 意图识别整体举例介绍
 
 该项目通过手工标记210条意图分类训练数据，并采用朴素贝叶斯算法训练得到意图分类模型。其最佳测试效果的F1值达到了96.68%。
 
@@ -417,49 +418,92 @@ class EntityExtractor:
 #### 5.2.1 特征构建
 
 1. TF-IDF特征
+
 ```s
-# 提取问题的TF-IDF特征
 def tfidf_features(self, text, vectorizer):
-    """
-    提取问题的TF-IDF特征
-    :param text:
-    :param vectorizer:
-    :return:
-    """
+
+    # 加载自定义词库
     jieba.load_userdict(self.vocab_path)
+    # 分词
     words = [w.strip() for w in jieba.cut(text) if w.strip() and w.strip() not in self.stopwords]
+    # 使用空格连接单词
     sents = [' '.join(words)]
 
+    # 计算tfidf
     tfidf = vectorizer.transform(sents).toarray()
     return tfidf
 ```
+
+- TF-IDF模型
+```s
+   from sklearn.feature_extraction.text import TfidfVectorizer
+   import joblib
+   import jieba
+   
+   
+   if __name__ == "__main__":
+       stopwords = [w.strip() for w in open('stop_words.utf8', 'r', encoding='utf8') if w.strip()]   # 停用词
+       text = [w.strip() for w in open('train_text.txt', 'r', encoding='utf8') if w.strip()]  # 预训练样本
+       jieba.load_userdict('vocab.txt')  # 加载自定义词库
+       
+       # 构造训练集
+       x_train = []
+       for i in text:
+           words = [w.strip() for w in jieba.cut(i) if w.strip() and w.strip() not in stopwords]
+	   words = ' '.join(words)
+       x_train.append(words)
+       
+       # 训练模型
+       vectorizer = TfidfVectorizer()
+       tfidf = vectorizer.fit_transform(x_train)
+       
+       # 保存模型
+       joblib.dump(vecorizer, 'tfidf_model.m')
+       
+       # 加载模型
+       tfidf_model = joblib.load('tfidf_model.m')
+
+       new_text = '产妇得动脉瘤婴儿率有多大?'  # 新样本
+       words = [w.strip() for w in jieba.cut(new_text) if w.strip() and w.strip() not in stopwords]  # 分词
+       sents = [' '.join(words)]
+       print(sents)
+       tfidf = tfidf_model.transform(sents).toarray()  # 计算tfidf特征
+       print(tfidf)
+```
+
 2. 人工特征
-```s	    
+
+```s
+...
+# 询问疾病
+self.disase_qwds = ['什么病', '啥病', '得了什么', '得了哪种', '怎么回事', '咋回事', '回事',
+                    '什么情况', '什么问题', '什么毛病', '啥毛病', '哪种病']
+# 询问症状
 self.symptom_qwds = ['什么症状', '哪些症状', '症状有哪些', '症状是什么', '什么表征', '哪些表征', '表征是什么',
                      '什么现象', '哪些现象', '现象有哪些', '症候', '什么表现', '哪些表现', '表现有哪些',
                      '什么行为', '哪些行为', '行为有哪些', '什么状况', '哪些状况', '状况有哪些', '现象是什么',
-                     '表现是什么', '行为是什么']  # 询问症状
+                     '表现是什么', '行为是什么']  
+# 询问治疗方案
 self.cureway_qwds = ['药', '药品', '用药', '胶囊', '口服液', '炎片', '吃什么药', '用什么药', '怎么办',
                      '买什么药', '怎么治疗', '如何医治', '怎么医治', '怎么治', '怎么医', '如何治',
-                     '医治方式', '疗法', '咋治', '咋办', '咋治', '治疗方法']  # 询问治疗方法
-self.lasttime_qwds = ['周期', '多久', '多长时间', '多少时间', '几天', '几年', '多少天', '多少小时',
-                      '几个小时', '多少年', '多久能好', '痊愈', '康复']  # 询问治疗周期
-self.cureprob_qwds = ['多大概率能治好', '多大几率能治好', '治好希望大么', '几率', '几成', '比例',
-                      '可能性', '能治', '可治', '可以治', '可以医', '能治好吗', '可以治好吗', '会好吗',
-                      '能好吗', '治愈吗']  # 询问治愈率
+                     '医治方式', '疗法', '咋治', '咋办', '咋治', '治疗方法']
+# 询问检查项目
 self.check_qwds = ['检查什么', '检查项目', '哪些检查', '什么检查', '检查哪些', '项目', '检测什么',
                    '哪些检测', '检测哪些', '化验什么', '哪些化验', '化验哪些', '哪些体检', '怎么查找',
-                   '如何查找', '怎么检查', '如何检查', '怎么检测', '如何检测']  # 询问检查项目
-self.belong_qwds = ['属于什么科', '什么科', '科室', '挂什么', '挂哪个', '哪个科', '哪些科']  # 询问科室
-self.disase_qwds = ['什么病', '啥病', '得了什么', '得了哪种', '怎么回事', '咋回事', '回事',
-                    '什么情况', '什么问题', '什么毛病', '啥毛病', '哪种病']  # 询问疾病
+                   '如何查找', '怎么检查', '如何检查', '怎么检测', '如何检测']
+# 询问所属科室
+self.belong_qwds = ['属于什么科', '什么科', '科室', '挂什么', '挂哪个', '哪个科', '哪些科']
+# 询问治愈率
+self.cureprob_qwds = ['多大概率能治好', '多大几率能治好', '治好希望大么', '几率', '几成', '比例',
+                      '可能性', '能治', '可治', '可以治', '可以医', '能治好吗', '可以治好吗', '会好吗',
+                      '能好吗', '治愈吗']
+# 询问治愈周期
+self.lasttime_qwds = ['周期', '多久', '多长时间', '多少时间', '几天', '几年', '多少天', '多少小时',
+                      '几个小时', '多少年', '多久能好', '痊愈', '康复']
+# 查询疾病属性（less one）
+...
  
 def other_features(self, text):
-	"""
-	提取问题的关键词特征
-	:param text:
-	:return:
-	"""
 	features = [0] * 7
 	for d in self.disase_qwds:
 	    if d in text:
@@ -476,118 +520,146 @@ def other_features(self, text):
 	for c in self.check_qwds:
 	    if c in text:
 	        features[3] += 1
-	for p in self.lasttime_qwds:
-	    if p in text:
+		
+        for d in self.belong_qwds:
+	    if d in text:
 	        features[4] += 1
-	
+
 	for r in self.cureprob_qwds:
 	    if r in text:
 	        features[5] += 1
-	
-	for d in self.belong_qwds:
-	    if d in text:
+		
+	for p in self.lasttime_qwds:
+	    if p in text:
 	        features[6] += 1
 	
 	m = max(features)
 	n = min(features)
 	normed_features = []
 	if m == n:
-	    normed_features = features
+	    normed_features = features  # 包含7个元素的list
 	else:
 	    for i in features:
 	        j = (i - n) / (m - n)
-	        normed_features.append(j)
+	        normed_features.append(j)  # 对features进行归一化
 	
 	return np.array(normed_features)
 
 ```
 
-#### 5.2.2 使用朴素贝叶斯进行文本分类
-- 项目没有给出训练过程，可参考下面sklearn的例子
+#### 5.2.2 使用朴素贝叶斯进行文本分类，并根据命名实体识别结果进行补充和纠正意图
+
 ```s
-    # 项目没有给出训练过程，可参考下面sklearn的例子
-    from sklearn.naive_bayes import MultinomialNB 
-
-    mnb = MultinomialNB()   
-    mnb.fit(X_train,y_train)   
-    y_predict = mnb.predict(X_test)
-
-    # 意图分类模型文件
-    self.tfidf_path = os.path.join(cur_dir, 'model/tfidf_model.m')
-    self.nb_path = os.path.join(cur_dir, 'model/intent_reg_model.m')  #朴素贝叶斯模型
+    # 加载预训练模型
+    self.tfidf_path = os.path.join(cur_dir, 'model/tfidf_model.joblib')  # tfidf模型
+    self.nb_path = os.path.join(cur_dir, 'model/intent_reg_model.joblib')  # 朴素贝叶斯模型
     self.tfidf_model = joblib.load(self.tfidf_path)
     self.nb_model = joblib.load(self.nb_path)
+    
+    # 查询snet中是否出现wds中的单词
+    def check_words(self, wds, sent):
+        for wd in wds:
+            if wd in sent:
+                return True
+        return False
+    
+    # 将x输入model得到预测结果
+    def model_predict(self, x, model):
+        pred = model.predict(x)
+        return pred
+    
+    # result包含5个字段，4个实体类型疾病、别名、并发症和症状，查询意图intentions
+    def extractor(self, question):
+    
+        # 实体识别，返回四个类型实体的匹配结果
+        self.entity_reg(question)
+        # 如果实体识别失败，则根据相似性进行实体匹配，返回相似性得分最高的实体类型和实体名称
+        if not self.result:
+            self.find_sim_words(question)
+	# 返回实体识别得到的实体类型
+        types = []  # 存储实体类型
+        for v in self.result.keys():
+            types.append(v)
 
-    # 意图预测
-    tfidf_feature = self.tfidf_features(question, self.tfidf_model)
+        intentions = []  # 存储查询意图
+        # 返回tfidf特征
+        tfidf_feature = self.tfidf_features(question, self.tfidf_model)
+	# 返回其他特征
+        other_feature = self.other_features(question)
+        m = other_feature.shape
+        other_feature = np.reshape(other_feature, (1, m[0]))
+	# 对两个特征进行拼接
+        feature = np.concatenate((tfidf_feature, other_feature), axis=1)
+	# 使用朴素贝叶斯模型进行预测
+        predicted = self.model_predict(feature, self.nb_model)
+	# 返回文本所属意图
+        intentions.append(predicted[0])
 
-    other_feature = self.other_features(question)
-    m = other_feature.shape
-    other_feature = np.reshape(other_feature, (1, m[0]))
-    feature = np.concatenate((tfidf_feature, other_feature), axis=1)
-    predicted = self.model_predict(feature, self.nb_model)
-    intentions.append(predicted[0])
+        # 根据命名实体识别得到的实体类型补充和纠正意图
+        if self.check_words(self.symptom_qwds, question) and ('Disease' in types or 'Alia' in types):
+            intention = "query_symptom"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知疾病，补充查询症状的意图
+        if self.check_words(self.cureway_qwds, question) and ('Disease' in types or 'Symptom' in types or 'Alias' in types or 'Complication' in types):
+            intention = "query_cureway"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知疾病或症状或并发症，补充查询治疗方案
+        if self.check_words(self.lasttime_qwds, question) and ('Disease' in types or 'Alia' in types):
+            intention = "query_period"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知疾病，补充查询治疗周期
+        if self.check_words(self.cureprob_qwds, question) and ('Disease' in types or 'Alias' in types):
+            intention = "query_rate"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知疾病，补充查询治愈率
+        if self.check_words(self.check_qwds, question) and ('Disease' in types or 'Alias' in types):
+            intention = "query_checklist"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知疾病，补充查询检查项目
+        if self.check_words(self.belong_qwds, question) and ('Disease' in types or 'Symptom' in types or 'Alias' in types or 'Complication' in types):
+            intention = "query_department"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知疾病、症状或并发症，补充查询所属科室
+        if self.check_words(self.disase_qwds, question) and ("Symptom" in types or "Complication" in types):
+            intention = "query_disease"
+            if intention not in intentions:
+                intentions.append(intention)  # 已知症状或并发症，补充查询疾病
+		
+        if not intentions and ('Disease' in types or 'Alias' in types):
+            intention = "disease_describe"
+            if intention not in intentions:
+                intentions.append(intention)   # 若没有检测到意图，且已知疾病，则返回疾病的描述
+        if self.check_words(self.disase_qwds, question) and ('Disease' in types or 'Alias' in types) and ("Symptom" in types or "Complication" in types):
+            intention = "query_disease"
+            if intention not in intentions:
+                intentions.append(intention)  # 若是疾病和症状或并发症同时出现，且出现了查询疾病的特征词，补充查询疾病
+        if not intentions or not types:
+            intention = "QA_matching"
+            if intention not in intentions:
+                intentions.append(intention)  # 若没有识别出实体或意图则调用其它方法
+
+        self.result["intentions"] = intentions
+
+        return self.result
 ```
 
-- 根据所识别的实体进行补充和纠正意图
+- 朴素贝叶斯模型
+
 ```s
-# 已知疾病，查询症状
-if self.check_words(self.symptom_qwds, question) and ('Disease' in types or 'Alia' in types):
-    intention = "query_symptom"
-    if intention not in intentions:
-        intentions.append(intention)
-# 已知疾病或症状，查询治疗方法
-if self.check_words(self.cureway_qwds, question) and \
-        ('Disease' in types or 'Symptom' in types or 'Alias' in types or 'Complication' in types):
-    intention = "query_cureway"
-    if intention not in intentions:
-        intentions.append(intention)
-# 已知疾病或症状，查询治疗周期
-if self.check_words(self.lasttime_qwds, question) and ('Disease' in types or 'Alia' in types):
-    intention = "query_period"
-    if intention not in intentions:
-        intentions.append(intention)
-# 已知疾病，查询治愈率
-if self.check_words(self.cureprob_qwds, question) and ('Disease' in types or 'Alias' in types):
-    intention = "query_rate"
-    if intention not in intentions:
-        intentions.append(intention)
-# 已知疾病，查询检查项目
-if self.check_words(self.check_qwds, question) and ('Disease' in types or 'Alias' in types):
-    intention = "query_checklist"
-    if intention not in intentions:
-        intentions.append(intention)
-# 查询科室
-if self.check_words(self.belong_qwds, question) and \
-        ('Disease' in types or 'Symptom' in types or 'Alias' in types or 'Complication' in types):
-    intention = "query_department"
-    if intention not in intentions:
-        intentions.append(intention)
-# 已知症状，查询疾病
-if self.check_words(self.disase_qwds, question) and ("Symptom" in types or "Complication" in types):
-    intention = "query_disease"
-    if intention not in intentions:
-        intentions.append(intention)
-
-# 若没有检测到意图，且已知疾病，则返回疾病的描述
-if not intentions and ('Disease' in types or 'Alias' in types):
-    intention = "disease_describe"
-    if intention not in intentions:
-        intentions.append(intention)
-# 若是疾病和症状同时出现，且出现了查询疾病的特征词，则意图为查询疾病
-if self.check_words(self.disase_qwds, question) and ('Disease' in types or 'Alias' in types) \
-        and ("Symptom" in types or "Complication" in types):
-    intention = "query_disease"
-    if intention not in intentions:
-        intentions.append(intention)
-# 若没有识别出实体或意图则调用其它方法
-if not intentions or not types:
-    intention = "QA_matching"
-    if intention not in intentions:
-        intentions.append(intention)
-
-self.result["intentions"] = intentions
-
+    from sklearn.naive_bayes import MultinomialNB  # 先验为多项分布的朴素贝叶斯
+    import joblib
+    
+    mnb = MultinomialNB()
+    mnb.fit(x_train, y_train)
+    
+    # 保存模型
+    mnb.dump(mnb, 'nb_model.m')
+    
+    # 加载模型
+    nb_model = mnb.load('nb_model.m')
+    
+    # 预测
+    y_predict = nb_model.predict(x_new) 
 ```
 
 ## 参考资料 
