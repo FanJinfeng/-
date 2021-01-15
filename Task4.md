@@ -381,14 +381,24 @@ class EntityExtractor:
 	for i in range(1, m + 1):
 	    for j in range(1, n + 1):
 		if s1[i - 1] == s2[j - 1]:
-		    solution[i][j] = solution[i - 1][j - 1]
+		    solution[i][j] = solution[i - 1][j - 1]  # 取对角线上的值
 		else:
+		    # 插入、删除、替换
 		    solution[i][j] = 1 + min(solution[i][j - 1], min(solution[i - 1][j],
 								     solution[i - 1][j - 1]))  # 取一个三角形上的最小值再加1
 	return solution[m][n]
 ```
 
-
+- 编辑距离
+    - 定义：也叫莱文斯坦距离（Levenshtein），是针对两个字符串的差异程度的量化量测，量测的方式是看至少需要多少次的处理才能将一个字符串变成另一个字符串。
+    - 例子：计算字符串a='love'，b='lolpe'的编辑距离，love->lolve(插入l)，lolve->lolpe(用v替换成p)，所以编辑距离为2。
+    - 公式定义：i和j分别是字符串a和字符串b的下标，下标从1开始。
+    ![image](https://www.zhihu.com/equation?tex=%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i%2C+j%29%3D%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%7B%5Cmax+%28i%2C+j%29%7D+%26+%7B%5Ctext+%7B+if+%7D+%5Cmin+%28i%2C+j%29%3D0%7D+%5C%5C+%7B%5Cmin+%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%7B%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i-1%2C+j%29%2B1%7D+%5C%5C+%7B%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i%2C+j-1%29%2B1%7D++%5C%5C%7B%5Coperatorname%7Blev%7D_%7Ba%2C+b%7D%28i-1%2C+j-1%29%2B1_%7B%5Cleft%28a_%7Bi%7D+%5Cneq+b_%7Bj%7D%5Cright%29%7D%7D+%5Cend%7Barray%7D%5Cright.%7D+%26+%7B%5Ctext+%7B+otherwise+%7D%7D%5Cend%7Barray%7D%5Cright.)
+    - 具体运算过程
+        - 1.建立一个矩阵，用来存储上一步计算好的距离；
+	- 2.初始化第一行和第一列的所有距离，即公式中的第一行；
+	- 3.然后开始循环计算所有的距离，直到最后一个字符。
+	
 ## 五、意图识别
 
 ### 5.1 整体思路
