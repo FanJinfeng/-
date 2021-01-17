@@ -59,7 +59,7 @@ class AnswerSearching:
 2. 代码注解
 
 ```s
-    # 主要是根据不同的实体和意图构造cypher查询语句
+    # 根据不同的实体和意图构造cypher查询语句
     def question_parser(data):
         """
         :param data: {"Disease":[], "Alias":[], "Symptom":[], "Complication":[]}
@@ -98,13 +98,23 @@ class AnswerSearching:
         if intent == "query_symptom" and label == "Disease":
             sql = ["MATCH (d:Disease)-[:HAS_SYMPTOM]->(s) WHERE d.name='{0}' RETURN d.name,s.name".format(e)
                    for e in entities]
+		   
         # 查询治疗方法，返回疾病和治疗方法
         if intent == "query_cureway" and label == "Disease":
             sql = ["MATCH (d:Disease)-[:HAS_DRUG]->(n) WHERE d.name='{0}' return d.name,d.treatment," \
                    "n.name".format(e) for e in entities]
+		   
          # 查询治疗周期，返回疾病和治疗周期
         if intent == "query_period" and label == "Disease":
             sql = ["MATCH (d:Disease) WHERE d.name='{0}' return d.name,d.period".format(e) for e in entities
+	  
+        # 查询疾病（已知疾病别名或者症状）
+        if intent == "query_disease" and label == "Alias":
+            sql = ["MATCH (d:Disease)-[]->(s:Alias) WHERE s.name='{0}' return " \
+                   "d.name".format(e) for e in entities]
+        if intent == "query_disease" and label == "Symptom":
+            sql = ["MATCH (d:Disease)-[]->(s:Symptom) WHERE s.name='{0}' return " \
+                   "d.name".format(e) for e in entities]
         ...
 ```
 
